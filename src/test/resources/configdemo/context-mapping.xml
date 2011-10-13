@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="GB2312"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="contextTemplate">
+
+	<resultMap id="CONTEXT_TEMPLATE" class="domain.Context">
+		<result property="id" column="id" />
+		<result property="exceptionId" column="exception_id" />
+		<result property="token" column="token" />
+		<result property="url" column="url" />
+		<result property="order" column="seq" />
+		<result property="refer" column="refer" />
+		<result property="userId" column="userId" />
+		<result property="agent" column="agent" />
+		<result property="timeCurrent" column="currentTime" />
+	</resultMap>
+
+	<insert id="INSERT-CONTEXT" parameterClass="domain.Context">
+		<![CDATA[
+		INSERT INTO context (
+			exception_id,
+			token,
+			url,
+			seq,
+			refer,
+			userId,
+			agent,
+			currentTime
+			)
+		VALUES(
+			#exceptionId#,
+			#token#,
+			#url#,
+			#order#,
+			#refer#,
+			#userId#,
+			#agent#,
+			#timeCurrent#
+		)
+		]]>
+	</insert>
+
+	<select id="GET-CONTEXT-NUM-BY-TOKEN" resultClass="int">
+		select count(id) from context
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="token">
+				token=#token#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="from">
+				currentTime >= #from#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="to">
+        		<![CDATA[
+            		currentTime <= #to# 
+            	]]>
+			</isNotEmpty>
+			order by currentTime DESC limit 200
+		</dynamic>
+	</select>
+
+
+</sqlMap>
