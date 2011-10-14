@@ -1,7 +1,7 @@
 /**
  * 
  */
-package review.ibatis;
+package review.ibatis.domain;
 
 import java.util.ArrayList;
 import java.util.List;

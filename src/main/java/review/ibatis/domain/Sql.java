@@ -1,7 +1,7 @@
 /**
  * 
  */
-package review.ibatis;
+package review.ibatis.domain;
 
 /**
  * @author sean.wang
@@ -18,6 +18,16 @@ public class Sql {
 	protected ResultMap resultMap;
 
 	protected String resultClass;
+
+	protected String path;
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
 
 	public String getStatement() {
 		return statement;

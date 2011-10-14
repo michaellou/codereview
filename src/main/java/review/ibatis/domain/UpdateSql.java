@@ -1,12 +1,13 @@
 /**
  * 
  */
-package review.ibatis;
+package review.ibatis.domain;
+
 
 /**
  * @author sean.wang
  * @since Oct 13, 2011
  */
-public class DeleteSql extends Sql {
+public class UpdateSql extends Sql {
 
 }

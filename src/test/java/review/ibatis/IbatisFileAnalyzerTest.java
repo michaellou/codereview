@@ -14,11 +14,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import review.ibatis.domain.Sql;
+import review.ibatis.domain.SqlMap;
+
 /**
  * @author sean.wang
  * @since Oct 13, 2011
  */
-public class SqlMapAnalyzerTest {
+public class IbatisFileAnalyzerTest {
 	protected static String getFileName(String string) {
 		return System.getProperty("user.dir") + "/src/test/resources/configdemo/" + string;
 	}
@@ -52,8 +55,8 @@ public class SqlMapAnalyzerTest {
 	}
 
 	@Test
-	public void testAnalyze() throws DocumentException {
-		SqlMap sqlmap = SqlMapAnalyzer.analyze(new File(getFileName("context-mapping.xml")));
+	public void testAnalyze() throws DocumentException, IbatisFileFormatInvalidException {
+		SqlMap sqlmap = IbatisFileAnalyzer.analyze(new File(getFileName("context-mapping.xml")));
 		Assert.assertEquals(2, sqlmap.getSqls().size());
 		Sql insert = sqlmap.getSqls().get(0);
 		Assert.assertEquals("INSERT-CONTEXT", insert.getId());
