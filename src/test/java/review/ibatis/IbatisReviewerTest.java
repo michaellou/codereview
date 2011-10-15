@@ -29,13 +29,17 @@ public class IbatisReviewerTest {
 	public void tearDown() throws Exception {
 	}
 
-	@Test
+	/**
+	 * 列出svn地址上ibatis配置文件内的所有sql语句
+	 * 
+	 * @throws SVNException
+	 */
+	@Test 
 	public void testFetchSqlsFromSvn() throws SVNException {
 		List<Sql> sqls = IbatisReviewer.fetchSqlsFromSvn("http://192.168.8.45:81", "/svn/dianping/platform/middleware/trunk/hawk", "hawk", "123456");
 		for(Sql sql: sqls) {
 			System.out.println("from: " + sql.getPath());
 			System.out.println(sql.getStatement());
-			
 		}
 	}
 
