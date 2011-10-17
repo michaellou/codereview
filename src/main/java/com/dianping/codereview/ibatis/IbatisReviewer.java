@@ -17,8 +17,6 @@ import com.dianping.codereview.ibatis.domain.SqlMap;
 import com.dianping.codereview.svn.Resource;
 import com.dianping.codereview.svn.SVNManager;
 
-
-
 /**
  * @author sean.wang
  * @since Oct 14, 2011
@@ -29,36 +27,47 @@ public class IbatisReviewer {
 	public static List<Sql> fetchSqlsFromSvn(String svnUrl, String path, String username, String password) throws SVNException {
 		SVNManager svnManager = new SVNManager(svnUrl, username, password);
 		Resource res = new Resource();
+		res.setName(path);
 		res.setPath(path);
 		List<Sql> sqls = new ArrayList<Sql>();
-		fetchDir(svnManager, res, sqls);
+		if (svnManager.isFile(res, -1)) {
+			fetchFile(svnManager, res, sqls);
+		} else {
+			fetchDir(svnManager, res, sqls);
+		}
 		return sqls;
 	}
 
 	private static void fetchDir(SVNManager svnManager, Resource dir, List<Sql> sqls) throws SVNException {
-		List<Resource> children = svnManager.getChildren(dir);
+		List<Resource> children = svnManager.getChildren(dir, null);
+		if (children == null) {
+			fetchFile(svnManager, dir, sqls);
+		}
 		for (Resource r : children) {
 			if (r.isFile()) {
-				if (r.getName().endsWith(".xml")) {
-					log.info("fetch file:" + r.getPath());
-					ByteArrayOutputStream out = new ByteArrayOutputStream();
-					String path = r.getPath().substring(1);
-					svnManager.getFile(path, out, -1);
-					SqlMap sqlmap = null;
-					try {
-						sqlmap = IbatisFileAnalyzer.analyze(new ByteArrayInputStream(out.toByteArray()));
-					} catch (IbatisFileFormatInvalidException e) {
-						log.info("not ibatis file:" + r.getPath());
-					}
-					if (sqlmap != null && sqlmap.getSqls() != null) {
-						for (Sql sql : sqlmap.getSqls()) {
-							sql.setPath(r.getPath());
-							sqls.add(sql);
-						}
-					}
-				}
+				fetchFile(svnManager, r, sqls);
 			} else {
 				fetchDir(svnManager, r, sqls);
+			}
+		}
+	}
+
+	private static void fetchFile(SVNManager svnManager, Resource r, List<Sql> sqls) throws SVNException {
+		if (r.getName().endsWith(".xml")) {
+			log.info("fetch file:" + r.getPath());
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			svnManager.getFile(r.getPath(), out, -1, null);
+			SqlMap sqlmap = null;
+			try {
+				sqlmap = IbatisFileAnalyzer.analyze(new ByteArrayInputStream(out.toByteArray()));
+			} catch (IbatisFileFormatInvalidException e) {
+				log.info("not ibatis file:" + r.getPath());
+			}
+			if (sqlmap != null && sqlmap.getSqls() != null) {
+				for (Sql sql : sqlmap.getSqls()) {
+					sql.setPath(r.getPath());
+					sqls.add(sql);
+				}
 			}
 		}
 	}

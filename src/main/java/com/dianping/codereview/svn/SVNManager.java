@@ -17,7 +17,6 @@ import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
-
 /**
  * @author sean.wang
  * @since Oct 14, 2011
@@ -26,7 +25,6 @@ public class SVNManager {
 	private final static Log log = LogFactory.getLog(SVNManager.class);
 
 	private String host;
-
 
 	private String username;
 
@@ -39,7 +37,6 @@ public class SVNManager {
 	public void setHost(String host) {
 		this.host = host;
 	}
-
 
 	public String getUsername() {
 		return username;
@@ -91,12 +88,10 @@ public class SVNManager {
 	 * @throws Exception
 	 *             可以自定义Exception
 	 */
-	public long getFile(String filePath, OutputStream outputStream, long version) throws SVNException {
-		SVNProperties properties = new SVNProperties();
+	public void getFile(String filePath, OutputStream outputStream, long version, SVNProperties properties) throws SVNException {
 		repository.getFile(getPath(filePath), version, properties, outputStream);
-		return Long.parseLong(properties.getStringValue("svn:entry:revision"));
 	}
-
+	
 	/**
 	 * 获取目录下的所有文件和子目录
 	 * 
@@ -106,9 +101,9 @@ public class SVNManager {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Resource> getChildren(Resource res) throws SVNException {
-		String path = getPath(res.getPath().substring(1));
-		Collection<SVNDirEntry> entries = repository.getDir(path, -1, null, (Collection<SVNDirEntry>) null);
+	public List<Resource> getChildren(Resource res, SVNProperties properties) throws SVNException {
+		String path = getPath(res.getPath());
+		Collection<SVNDirEntry> entries = repository.getDir(path, -1, properties, (Collection<SVNDirEntry>) null);
 		List<Resource> result = new ArrayList<Resource>();
 		for (SVNDirEntry entry : entries) {
 			Resource resource = new Resource();
@@ -135,9 +130,13 @@ public class SVNManager {
 		}
 		return true;
 	}
+	
+	public boolean isFile(Resource r, long version) throws SVNException {
+		return isFile(r.getPath(), version);
+	}
 
 	private String getPath(String filePath) {
-		return filePath;
+		return filePath.substring(1);
 	}
 
 	/**
