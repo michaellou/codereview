@@ -1,18 +1,23 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+	<groupId>com.dianping</groupId>
+	<artifactId>dianping-parent</artifactId>
+	<version>1.0.0</version>
+  </parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>review.ibatis</groupId>
-	<artifactId>reviewibatis</artifactId>
+	<groupId>com.dianping.codereview.ibatis</groupId>
+	<artifactId>codereview</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
-	<name>reviewibatis v${project.version}</name>
+	<name>codereview v${project.version}</name>
 	<organization>
 	</organization>
 	<inceptionYear>2011.9</inceptionYear>
 	<properties>
 	</properties>
-	<description>review sql in ibatis config files</description>
+	<description></description>
 	<developers>
 		<developer>
 			<id>sean</id>
