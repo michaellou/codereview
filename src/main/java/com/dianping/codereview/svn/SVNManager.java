@@ -56,6 +56,8 @@ public class SVNManager {
 
 	private SVNRepository repository;
 
+	private boolean onlyTrunk = false;
+
 	public SVNManager(String host, String username, String password) throws SVNException {
 		this.host = host;
 		this.username = username;
@@ -91,7 +93,7 @@ public class SVNManager {
 	public void getFile(String filePath, OutputStream outputStream, long version, SVNProperties properties) throws SVNException {
 		repository.getFile(getPath(filePath), version, properties, outputStream);
 	}
-	
+
 	/**
 	 * 获取目录下的所有文件和子目录
 	 * 
@@ -115,6 +117,37 @@ public class SVNManager {
 		return result;
 	}
 
+	public List<Resource> getDescendantFiles(String rootPath, String filenamePattern) throws SVNException {
+		List<Resource> files = new ArrayList<Resource>();
+		Resource root = new Resource();
+		root.setPath(rootPath);
+		fetchDir(root, files, filenamePattern);
+		return files;
+	}
+
+	private void fetchDir(Resource dir, List<Resource> files, String filenamePattern) throws SVNException {
+		List<Resource> children = getChildren(dir, null);
+		if (children == null) {
+			return;
+		}
+		for (Resource r : children) {
+			if (r.isFile()) {
+				if (onlyTrunk && !r.getPath().contains("trunk")) {
+					continue;
+				}
+				if (filenamePattern == null || filenamePattern.equals(r.getName())) {
+					log.debug("fetch file:" + r.getPath());
+					files.add(r);
+				}
+			} else {
+				if (onlyTrunk && ("branches".equals(r.getName()) || "tags".equals(r.getName()))) {
+					continue;// ignore not trunk dir
+				}
+				fetchDir(r, files, filenamePattern);
+			}
+		}
+	}
+
 	/**
 	 * 判断svn上指定文件是否存在
 	 * 
@@ -130,7 +163,7 @@ public class SVNManager {
 		}
 		return true;
 	}
-	
+
 	public boolean isFile(Resource r, long version) throws SVNException {
 		return isFile(r.getPath(), version);
 	}
@@ -163,6 +196,14 @@ public class SVNManager {
 			return false;
 		}
 		return false;
+	}
+
+	public boolean isOnlyTrunk() {
+		return onlyTrunk;
+	}
+
+	public void setOnlyTrunk(boolean onlyTrunk) {
+		this.onlyTrunk = onlyTrunk;
 	}
 
 }

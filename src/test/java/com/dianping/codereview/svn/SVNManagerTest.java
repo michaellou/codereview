@@ -73,5 +73,13 @@ public class SVNManagerTest {
 		res.setPath("/svn/dianping/platform/middleware/trunk/hawk/pom.xml");
 		svnManager.getChildren(res, null);
 	}
+	
+	@Test
+	public void testGetDescendant() throws SVNException {
+		List<Resource> files = svnManager.getDescendantFiles("/svn/dianping/platform/middleware/trunk/", "pom.xml");
+		for (Resource resource : files) {
+			System.out.println(resource.getPath());
+		}
+	}
 
 }

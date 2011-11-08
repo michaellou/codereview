@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="GB2312"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="callInfoTemplate">
+
+	<resultMap id="CALLINFO_TEMPLATE" class="com.dianping.hawk.db.domain.CallInfo">
+		<result property="id" column="id" />
+		<result property="serviceName" column="service_name" />
+		<result property="methodName" column="method_name" />
+		<result property="providerName" column="provider_name" />
+		<result property="consumerName" column="consumer_name" />
+		<result property="providerIp" column="provider_ip" />
+		<result property="consumerIp" column="consumer_ip" />
+		<result property="code" column="code" />
+		<result property="count" column="count" />
+		<result property="valueMax" column="value_max" />
+		<result property="valueMin" column="value_min" />
+		<result property="valueAvg" column="value_avg" />
+		<result property="valueLast" column="value_last" />
+		<result property="valueSum" column="value_sum" />
+		<result property="timeCurrent" column="time_current" />
+	</resultMap>
+
+	<insert id="INSERT-CALLINFO" parameterClass="com.dianping.hawk.db.domain.CallInfo">
+		<![CDATA[
+		INSERT INTO call_log (
+			service_name,
+			method_name,
+			provider_name,
+			consumer_name,
+			provider_ip,
+			consumer_ip,
+			code,
+			count,
+			value_max,
+			value_min,
+			value_avg,
+			value_last,
+			value_sum,
+			time_current
+			)
+		VALUES(
+			#serviceName#,
+			#methodName#,
+			#providerName#,
+			#consumerName#,
+			#providerIp#,
+			#consumerIp#,
+			#code#,
+			#count#,
+			#valueMax#,
+			#valueMin#,
+			#valueAvg#,
+			#valueLast#,
+			#valueSum#,
+			#timeCurrent#
+		)
+		]]>
+	</insert>
+
+
+</sqlMap>

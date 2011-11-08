@@ -1,0 +1,53 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>group</artifactId>
+		<groupId>com.dianping</groupId>
+		<version>1.0.1</version>
+	</parent>
+	<groupId>com.dianping</groupId>
+	<artifactId>group-service</artifactId>
+	<version>1.0.1</version>
+	<packaging>war</packaging>
+	<name>group-service Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<env>dev</env>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.dianping.dpsf</groupId>
+			<artifactId>dpsf-net</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dianping.hawk</groupId>
+			<artifactId>hawk-client</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<filters>
+			<filter>src/main/filters/config-${env}.properties</filter>
+		</filters>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+</project>
+

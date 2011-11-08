@@ -17,14 +17,13 @@ import org.junit.Test;
 import com.dianping.codereview.ibatis.domain.Sql;
 import com.dianping.codereview.ibatis.domain.SqlMap;
 
-
 /**
  * @author sean.wang
  * @since Oct 13, 2011
  */
 public class IbatisFileAnalyzerTest {
 	protected static String getFileName(String string) {
-		return System.getProperty("user.dir") + "/src/test/resources/configdemo/" + string;
+		return System.getProperty("user.dir") + "/src/test/resources/com/dianping/codereview/ibatis/" + string;
 	}
 
 	/**
@@ -68,5 +67,7 @@ public class IbatisFileAnalyzerTest {
 		Assert.assertEquals("int", select.getResultClass());
 		Assert.assertTrue(select.getStatement().startsWith("select count(id)"));
 	}
+	
+	
 
 }

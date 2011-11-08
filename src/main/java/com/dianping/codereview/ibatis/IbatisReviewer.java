@@ -41,7 +41,7 @@ public class IbatisReviewer {
 	private static void fetchDir(SVNManager svnManager, Resource dir, List<Sql> sqls) throws SVNException {
 		List<Resource> children = svnManager.getChildren(dir, null);
 		if (children == null) {
-			fetchFile(svnManager, dir, sqls);
+			return;
 		}
 		for (Resource r : children) {
 			if (r.isFile()) {
