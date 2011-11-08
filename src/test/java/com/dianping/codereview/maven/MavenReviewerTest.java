@@ -49,15 +49,8 @@ public class MavenReviewerTest {
 	public void tearDown() throws Exception {
 	}
 
-	/**
-	 * Test method for {@link com.dianping.codereview.maven.MavenReviewer#search(java.lang.String, java.lang.String)}.
-	 * 
-	 * @throws MavenPomFormatInvalidException
-	 * @throws SVNException
-	 * @throws InterruptedException
-	 */
 	@Test
-	public void testSearch() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+	public void testSearchBeDepend() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
 		MavenReviewer maven = new MavenReviewer();
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
@@ -70,29 +63,27 @@ public class MavenReviewerTest {
 			}
 			Thread.sleep(1000);
 		}
-		List<Pom> poms = maven.searchBeDepended("hawk-client", null);
+		List<Pom> poms = maven.searchBeDepended("h", null);
 		for (Pom pom : poms) {
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + " hawk-client version:" + pom.getDependedVersion("hawk-client"));
+			Dependency searched = pom.getSearchedDependency();
+			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
+		}
+		System.out.println();
+		poms = maven.searchBeDepended("h", "0.2.2");
+		for (Pom pom : poms) {
+			Dependency searched = pom.getSearchedDependency();
+			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
 		}
 		System.out.println();
 		poms = maven.searchBeDepended("hawk-client", "0.2.2");
 		for (Pom pom : poms) {
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + " hawk-client version:" + pom.getDependedVersion("hawk-client"));
-		}
-		System.out.println();
-		List<Dependency> searchDepended = maven.searchDepended("group-service", null);
-		for (Dependency dependency : searchDepended) {
-			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion());
-		}
-		System.out.println();
-		searchDepended = maven.searchDepended("group-service", "1.0.1");
-		for (Dependency dependency : searchDepended) {
-			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion());
+			Dependency searched = pom.getSearchedDependency();
+			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
 		}
 	}
 
 	@Test
-	public void testSearch2() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+	public void testSearchDepend() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
 		MavenReviewer maven = new MavenReviewer();
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
@@ -105,19 +96,13 @@ public class MavenReviewerTest {
 			}
 			Thread.sleep(1000);
 		}
-		List<Pom> poms = maven.searchBeDepended("hawk-c", null);
-		for (Pom pom : poms) {
-			Dependency searched = pom.getSearchedDependency();
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
+		List<Dependency> searchDepended = maven.searchDepended("group", null);
+		for (Dependency dependency : searchDepended) {
+			Pom beDependency = dependency.getSearchedPom();
+			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + beDependency.getArtifactId() + ":" + beDependency.getVersion());
 		}
 		System.out.println();
-		poms = maven.searchBeDepended("hawk-client", "0.2.2");
-		for (Pom pom : poms) {
-			Dependency searched = pom.getSearchedDependency();
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
-		}
-		System.out.println();
-		List<Dependency> searchDepended = maven.searchDepended("group-serv", null);
+		searchDepended = maven.searchDepended("group", "1.0.1");
 		for (Dependency dependency : searchDepended) {
 			Pom beDependency = dependency.getSearchedPom();
 			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + beDependency.getArtifactId() + ":" + beDependency.getVersion());

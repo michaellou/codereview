@@ -96,7 +96,7 @@ public class MavenReviewer {
 				for (Pom pom : pomList) {
 					if (version == null) {
 						String dependedVersion = pom.getDependedVersion(dependArtifactId);
-						if(dependedVersion != null) {
+						if (dependedVersion != null) {
 							Dependency dep = new Dependency();
 							dep.setArtifactId(dependArtifactId);
 							dep.setVersion(dependedVersion);
@@ -121,17 +121,20 @@ public class MavenReviewer {
 			return null;
 		}
 		Set<Entry<String, List<Pom>>> entrySet = this.cache.entrySet();
+		List<Dependency> list = new ArrayList<Dependency>();
 		for (Entry<String, List<Pom>> entry : entrySet) {
 			if (entry.getKey().contains(artifactId)) {
 				List<Pom> pomList = entry.getValue();
 				for (Pom pom : pomList) {
 					if (version == null || pom.getVersion().equals(version)) {
-						return pom.getDependencies();
+						if (pom.getDependencies() != null) {
+							list.addAll(pom.getDependencies());
+						}
 					}
 				}
 			}
 		}
-		return null;
+		return list;
 	}
 
 	private void cacheFiles() throws SVNException, MavenPomFormatInvalidException {
