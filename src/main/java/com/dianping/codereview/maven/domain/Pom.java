@@ -27,6 +27,8 @@ public class Pom {
 	private List<Dependency> dependencies;
 
 	private Date created = new Date();
+	
+	private Dependency searchedDependency;
 
 	public String getGroupId() {
 		return groupId;
@@ -104,6 +106,7 @@ public class Pom {
 		if (this.dependencies == null) {
 			this.dependencies = new ArrayList<Dependency>();
 		}
+		d.setSearchedPom(this);
 		this.dependencies.add(d);
 	}
 
@@ -154,6 +157,14 @@ public class Pom {
 			}
 		}
 		return null;
+	}
+
+	public Dependency getSearchedDependency() {
+		return searchedDependency;
+	}
+
+	public void setSearchedDependency(Dependency searched) {
+		this.searchedDependency = searched;
 	}
 
 }

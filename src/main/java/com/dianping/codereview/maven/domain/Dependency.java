@@ -16,6 +16,8 @@ public class Dependency {
 	private String version;
 
 	private Scope scope;
+	
+	private Pom searchedPom;
 
 	public String getGroupId() {
 		return groupId;
@@ -47,6 +49,14 @@ public class Dependency {
 
 	public void setScope(Scope scope) {
 		this.scope = scope;
+	}
+
+	public Pom getSearchedPom() {
+		return searchedPom;
+	}
+
+	public void setSearchedPom(Pom beDependency) {
+		this.searchedPom = beDependency;
 	}
 
 }

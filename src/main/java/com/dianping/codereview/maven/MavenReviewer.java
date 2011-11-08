@@ -21,7 +21,7 @@ import com.dianping.codereview.svn.SVNManager;
 public class MavenReviewer {
 	private final static Log log = LogFactory.getLog(MavenReviewer.class);
 
-	private Map<String, List<Pom>> antiDependencies;
+	private Map<String, List<Pom>> beDependencies;
 
 	private String svnUrl;
 
@@ -33,8 +33,8 @@ public class MavenReviewer {
 
 	private SVNManager svnManager;
 
-	public void setAntiDependencies(Map<String, List<Pom>> antiDependencies) {
-		this.antiDependencies = antiDependencies;
+	public void setBeDependencies(Map<String, List<Pom>> antiDependencies) {
+		this.beDependencies = antiDependencies;
 	}
 
 	public void setSvnRootDir(String svnRootDir) {
@@ -84,17 +84,30 @@ public class MavenReviewer {
 	}
 
 	public List<Pom> searchBeDepended(String artifactId, String version) {
-		if (this.antiDependencies == null || this.antiDependencies.size() == 0) {
+		if (this.beDependencies == null || this.beDependencies.size() == 0) {
 			return null;
 		}
 		List<Pom> list = new ArrayList<Pom>();
-		Set<Entry<String, List<Pom>>> entrySet = this.antiDependencies.entrySet();
+		Set<Entry<String, List<Pom>>> entrySet = this.beDependencies.entrySet();
 		for (Entry<String, List<Pom>> entry : entrySet) {
-			String key = entry.getKey();
-			if (key.contains(artifactId)) {
+			String dependArtifactId = entry.getKey();
+			if (dependArtifactId.contains(artifactId)) {
 				List<Pom> pomList = entry.getValue();
 				for (Pom pom : pomList) {
-					if (pom.isDepended(key, version)) {
+					if (version == null) {
+						String dependedVersion = pom.getDependedVersion(dependArtifactId);
+						if(dependedVersion != null) {
+							Dependency dep = new Dependency();
+							dep.setArtifactId(dependArtifactId);
+							dep.setVersion(dependedVersion);
+							pom.setSearchedDependency(dep);
+							list.add(pom);
+						}
+					} else if (pom.isDepended(dependArtifactId, version)) {
+						Dependency dep = new Dependency();
+						dep.setArtifactId(dependArtifactId);
+						dep.setVersion(version);
+						pom.setSearchedDependency(dep);
 						list.add(pom);
 					}
 				}
@@ -112,7 +125,7 @@ public class MavenReviewer {
 			if (entry.getKey().contains(artifactId)) {
 				List<Pom> pomList = entry.getValue();
 				for (Pom pom : pomList) {
-					if(version == null || pom.getVersion().equals(version)) {
+					if (version == null || pom.getVersion().equals(version)) {
 						return pom.getDependencies();
 					}
 				}
@@ -151,7 +164,7 @@ public class MavenReviewer {
 					antiDepends.add(pom);
 				}
 			}
-			this.antiDependencies = antiCache;
+			this.beDependencies = antiCache;
 		}
 	}
 
