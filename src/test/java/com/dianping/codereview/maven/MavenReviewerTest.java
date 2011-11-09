@@ -63,22 +63,22 @@ public class MavenReviewerTest {
 			}
 			Thread.sleep(1000);
 		}
-		List<Pom> poms = maven.searchBeDepended("h", null);
-		for (Pom pom : poms) {
-			Dependency searched = pom.getSearchedDependency();
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
+		List<Dependency> bedeps = maven.searchBeDepended("h", null);
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
 		}
 		System.out.println();
-		poms = maven.searchBeDepended("h", "0.2.2");
-		for (Pom pom : poms) {
-			Dependency searched = pom.getSearchedDependency();
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
+		bedeps = maven.searchBeDepended("h", "0.2.2");
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
 		}
 		System.out.println();
-		poms = maven.searchBeDepended("hawk-client", "0.2.2");
-		for (Pom pom : poms) {
-			Dependency searched = pom.getSearchedDependency();
-			System.out.println(pom.getSvnPath() + ":" + pom.getArtifactId() + ":" + pom.getVersion() + ":" + searched.getArtifactId() + ":" + searched.getVersion());
+		bedeps = maven.searchBeDepended("hawk-client", "0.2.2");
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
 		}
 	}
 
@@ -112,6 +112,38 @@ public class MavenReviewerTest {
 		for (Dependency dependency : searchDepended) {
 			Pom searchedPom = dependency.getSearchedPom();
 			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + searchedPom.getArtifactId() + ":" + searchedPom.getVersion());
+		}
+	}
+
+	@Test
+	public void testSearchUseGroupId() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+		MavenReviewer maven = new MavenReviewer();
+		maven.setSvnUrl("http://192.168.8.45:81");
+		maven.setUsername("hawk");
+		maven.setPassword("123456");
+		maven.setSvnRootDir("/svn/dianping/dianping");
+		maven.init();
+		while (true) {
+			if (maven.isFirstInit()) {
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		maven.dumpBeDepended();
+		System.out.println("被依赖方项目名,被依赖方项目版本,依赖方项目名,依赖方项目版本");
+		String artifactId = null;
+		String groupId = "com.dianping";
+		String version = null;
+		List<Dependency> bedeps = maven.searchBeDepended(artifactId, groupId, version);
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + "," + bedep.getVersion() + "," + pom.getArtifactId() + ":" + pom.getVersion());
+		}
+		System.out.println("项目名,项目版本,依赖项目名,依赖项目版本");
+		List<Dependency> searchDepended = maven.searchDepended(artifactId, groupId, version);
+		for (Dependency dependency : searchDepended) {
+			Pom searchedPom = dependency.getSearchedPom();
+			System.out.println(searchedPom.getArtifactId() + "," + searchedPom.getVersion() + "," + dependency.getArtifactId() + "," + dependency.getVersion());
 		}
 	}
 }

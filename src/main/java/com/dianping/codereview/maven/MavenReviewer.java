@@ -83,32 +83,38 @@ public class MavenReviewer {
 		return firstInit;
 	}
 
-	public List<Pom> searchBeDepended(String artifactId, String version) {
+	public List<Dependency> searchBeDepended(String artifactId, String version) {
+		return this.searchBeDepended(artifactId, null, version);
+	}
+
+	public List<Dependency> searchBeDepended(String artifactId, String groupId, String version) {
 		if (this.beDependencies == null || this.beDependencies.size() == 0) {
 			return null;
 		}
-		List<Pom> list = new ArrayList<Pom>();
+		List<Dependency> list = new ArrayList<Dependency>();
 		Set<Entry<String, List<Pom>>> entrySet = this.beDependencies.entrySet();
 		for (Entry<String, List<Pom>> entry : entrySet) {
 			String dependArtifactId = entry.getKey();
-			if (dependArtifactId.contains(artifactId)) {
+			if (artifactId == null || dependArtifactId.contains(artifactId)) {
 				List<Pom> pomList = entry.getValue();
 				for (Pom pom : pomList) {
-					if (version == null) {
-						String dependedVersion = pom.getDependedVersion(dependArtifactId);
-						if (dependedVersion != null) {
+					Dependency dependency = pom.getDependency(dependArtifactId);
+					if (groupId == null || (dependency.getGroupId() != null && dependency.getGroupId().contains(groupId))) {
+						if (version == null) {
+							String dependedVersion = dependency.getVersion();
 							Dependency dep = new Dependency();
 							dep.setArtifactId(dependArtifactId);
 							dep.setVersion(dependedVersion);
-							pom.setSearchedDependency(dep);
-							list.add(pom);
+							dep.setSearchedPom(pom);
+							list.add(dep);
+							log.debug("add:" + dep.getArtifactId() + ":" + dep.getVersion() + " bedepend: " + pom.getArtifactId());
+						} else if (pom.isDepended(dependArtifactId, version)) {
+							Dependency dep = new Dependency();
+							dep.setArtifactId(dependArtifactId);
+							dep.setVersion(version);
+							dep.setSearchedPom(pom);
+							list.add(dep);
 						}
-					} else if (pom.isDepended(dependArtifactId, version)) {
-						Dependency dep = new Dependency();
-						dep.setArtifactId(dependArtifactId);
-						dep.setVersion(version);
-						pom.setSearchedDependency(dep);
-						list.add(pom);
 					}
 				}
 			}
@@ -116,19 +122,42 @@ public class MavenReviewer {
 		return list;
 	}
 
+	public void dumpBeDepended() {
+		if (this.beDependencies == null || this.beDependencies.size() == 0) {
+			return;
+		}
+		Set<Entry<String, List<Pom>>> entrySet = this.beDependencies.entrySet();
+		for (Entry<String, List<Pom>> entry : entrySet) {
+			String dependArtifactId = entry.getKey();
+			System.out.println(dependArtifactId);
+			List<Pom> pomList = entry.getValue();
+			for (Pom pom : pomList) {
+				Dependency dependency = pom.getDependency(dependArtifactId);
+				System.out.println("--" + pom.getArtifactId());
+				System.out.println("----" + dependency.getGroupId() + "," + dependency.getArtifactId() + "," + dependency.getVersion());
+			}
+		}
+	}
+
 	public List<Dependency> searchDepended(String artifactId, String version) {
+		return this.searchDepended(artifactId, null, version);
+	}
+
+	public List<Dependency> searchDepended(String artifactId, String groupId, String version) {
 		if (this.cache == null || this.cache.size() == 0) {
 			return null;
 		}
 		Set<Entry<String, List<Pom>>> entrySet = this.cache.entrySet();
 		List<Dependency> list = new ArrayList<Dependency>();
 		for (Entry<String, List<Pom>> entry : entrySet) {
-			if (entry.getKey().contains(artifactId)) {
+			if (artifactId == null || entry.getKey().contains(artifactId)) {
 				List<Pom> pomList = entry.getValue();
 				for (Pom pom : pomList) {
-					if (version == null || pom.getVersion().equals(version)) {
-						if (pom.getDependencies() != null) {
-							list.addAll(pom.getDependencies());
+					if (groupId == null || (pom.getGroupId() != null && pom.getGroupId().contains(groupId))) {
+						if (version == null || pom.getVersion().equals(version)) {
+							if (pom.getDependencies() != null) {
+								list.addAll(pom.getDependencies());
+							}
 						}
 					}
 				}

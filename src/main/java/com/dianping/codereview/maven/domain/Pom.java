@@ -147,13 +147,13 @@ public class Pom {
 		return false;
 	}
 
-	public String getDependedVersion(String artifactId) {
+	public Dependency getDependency(String artifactId) {
 		if (this.dependencies == null || this.dependencies.size() == 0) {
 			return null;
 		}
 		for (Dependency depend : this.dependencies) {
 			if (depend.getArtifactId().equals(artifactId)) {
-				return depend.getVersion();
+				return depend;
 			}
 		}
 		return null;

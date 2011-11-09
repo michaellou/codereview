@@ -105,7 +105,12 @@ public class SVNManager {
 	@SuppressWarnings("unchecked")
 	public List<Resource> getChildren(Resource res, SVNProperties properties) throws SVNException {
 		String path = getPath(res.getPath());
-		Collection<SVNDirEntry> entries = repository.getDir(path, -1, properties, (Collection<SVNDirEntry>) null);
+		Collection<SVNDirEntry> entries = null;
+		try {
+			entries = repository.getDir(path, -1, properties, (Collection<SVNDirEntry>) null);
+		} catch (org.tmatesoft.svn.core.SVNAuthenticationException e) {
+			return null;
+		}
 		List<Resource> result = new ArrayList<Resource>();
 		for (SVNDirEntry entry : entries) {
 			Resource resource = new Resource();
