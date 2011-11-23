@@ -27,7 +27,7 @@ public class Pom {
 	private List<Dependency> dependencies;
 
 	private Date created = new Date();
-	
+
 	private Dependency searchedDependency;
 
 	public String getGroupId() {
@@ -138,8 +138,8 @@ public class Pom {
 			return false;
 		}
 		for (Dependency depend : this.dependencies) {
-			if (depend.getArtifactId().equals(artifactId)) {
-				if (version == null || depend.getVersion().equals(version)) {
+			if (artifactId.equals(depend.getArtifactId())) {
+				if (version == null || version.equals(depend.getVersion())) {
 					return true;
 				}
 			}
@@ -152,7 +152,7 @@ public class Pom {
 			return null;
 		}
 		for (Dependency depend : this.dependencies) {
-			if (depend.getArtifactId().equals(artifactId)) {
+			if (artifactId.equals(depend.getArtifactId())) {
 				return depend;
 			}
 		}

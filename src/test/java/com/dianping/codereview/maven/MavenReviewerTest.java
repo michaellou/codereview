@@ -121,7 +121,7 @@ public class MavenReviewerTest {
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
 		maven.setPassword("123456");
-		maven.setSvnRootDir("/svn/dianping/dianping");
+		maven.setSvnRootDir("/svn/dianping/dianping/group");
 		maven.init();
 		while (true) {
 			if (maven.isFirstInit()) {
