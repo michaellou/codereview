@@ -4,6 +4,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,15 +124,15 @@ public class SVNManager {
 		return result;
 	}
 
-	public List<Resource> getDescendantFiles(String rootPath, String filenamePattern) throws SVNException {
+	public List<Resource> getDescendantFiles(String rootPath, String filename) throws SVNException {
 		List<Resource> files = new ArrayList<Resource>();
 		Resource root = new Resource();
 		root.setPath(rootPath);
-		fetchDir(root, files, filenamePattern);
+		fetchDir(root, files, filename);
 		return files;
 	}
 
-	private void fetchDir(Resource dir, List<Resource> files, String filenamePattern) throws SVNException {
+	private void fetchDir(Resource dir, List<Resource> files, String filename) throws SVNException {
 		List<Resource> children = getChildren(dir, null);
 		if (children == null) {
 			return;
@@ -140,7 +142,7 @@ public class SVNManager {
 				if (onlyTrunk && !r.getPath().contains("trunk")) {
 					continue;
 				}
-				if (filenamePattern == null || filenamePattern.equals(r.getName())) {
+				if (filename == null || filename.equals(r.getName())) {
 					log.debug("fetch file:" + r.getPath());
 					files.add(r);
 				}
@@ -148,7 +150,47 @@ public class SVNManager {
 				if (onlyTrunk && ("branches".equals(r.getName()) || "tags".equals(r.getName()))) {
 					continue;// ignore not trunk dir
 				}
-				fetchDir(r, files, filenamePattern);
+				fetchDir(r, files, filename);
+			}
+		}
+	}
+
+	public List<Resource> getPatternDescendantFiles(String rootPath, String filenamePattern) throws SVNException {
+		List<Resource> files = new ArrayList<Resource>();
+		Resource root = new Resource();
+		root.setPath(rootPath);
+		fetchPatternDir(null, root, files, filenamePattern);
+		return files;
+	}
+
+	public void fetchPatternDir(Pattern pattern, Resource dir, List<Resource> files, String filenamePattern) throws SVNException {
+		List<Resource> children = getChildren(dir, null);
+		if (children == null) {
+			return;
+		}
+		for (Resource r : children) {
+			if (r.isFile()) {
+				if (onlyTrunk && !r.getPath().contains("trunk")) {
+					continue;
+				}
+				if (filenamePattern == null) {
+					log.debug("no pattern, fetch file:" + r.getPath());
+					files.add(r);
+				} else {
+					if (pattern == null) {
+						pattern = Pattern.compile(filenamePattern);
+					}
+					Matcher matcher = pattern.matcher(r.getName());
+					if (matcher.matches()) {
+						log.debug("match pattern, fetch file:" + r.getPath());
+						files.add(r);
+					}
+				}
+			} else {
+				if (onlyTrunk && ("branches".equals(r.getName()) || "tags".equals(r.getName()))) {
+					continue;// ignore not trunk dir
+				}
+				fetchPatternDir(pattern, r, files, filenamePattern);
 			}
 		}
 	}

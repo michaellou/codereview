@@ -6,53 +6,56 @@ package com.dianping.codereview.ibatis;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tmatesoft.svn.core.SVNException;
 
+import com.dianping.codereview.CachedSvnReviewer;
 import com.dianping.codereview.ibatis.domain.Sql;
 import com.dianping.codereview.ibatis.domain.SqlMap;
 import com.dianping.codereview.svn.Resource;
-import com.dianping.codereview.svn.SVNManager;
 
 /**
  * @author sean.wang
  * @since Oct 14, 2011
  */
-public class IbatisReviewer {
+public class IbatisReviewer extends CachedSvnReviewer {
 	private final static Log log = LogFactory.getLog(IbatisReviewer.class);
 
-	public static List<Sql> fetchSqlsFromSvn(String svnUrl, String path, String username, String password) throws SVNException {
-		SVNManager svnManager = new SVNManager(svnUrl, username, password);
+	private Map<String, List<Sql>> sqlCache;
+
+	public List<Sql> fetchSqlsFromSvn(String path) throws SVNException {
 		Resource res = new Resource();
 		res.setName(path);
 		res.setPath(path);
 		List<Sql> sqls = new ArrayList<Sql>();
 		if (svnManager.isFile(res, -1)) {
-			fetchFile(svnManager, res, sqls);
+			fetchFile(res, sqls);
 		} else {
-			fetchDir(svnManager, res, sqls);
+			fetchDir(res, sqls);
 		}
 		return sqls;
 	}
 
-	private static void fetchDir(SVNManager svnManager, Resource dir, List<Sql> sqls) throws SVNException {
+	private void fetchDir(Resource dir, List<Sql> sqls) throws SVNException {
 		List<Resource> children = svnManager.getChildren(dir, null);
 		if (children == null) {
 			return;
 		}
 		for (Resource r : children) {
 			if (r.isFile()) {
-				fetchFile(svnManager, r, sqls);
+				fetchFile(r, sqls);
 			} else {
-				fetchDir(svnManager, r, sqls);
+				fetchDir(r, sqls);
 			}
 		}
 	}
 
-	private static void fetchFile(SVNManager svnManager, Resource r, List<Sql> sqls) throws SVNException {
+	public void fetchFile(Resource r, List<Sql> sqls) throws SVNException {
 		if (r.getName().endsWith(".xml")) {
 			log.info("fetch file:" + r.getPath());
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -70,6 +73,61 @@ public class IbatisReviewer {
 				}
 			}
 		}
+	}
+
+	public List<Sql> fetchSqlsFromCache() throws SVNException {
+		Resource res = new Resource();
+		res.setName(this.svnRootDir);
+		res.setPath(this.svnRootDir);
+		List<Sql> sqls = new ArrayList<Sql>();
+		if (svnManager.isFile(res, -1)) {
+			fetchFileFromCache(res, sqls);
+		} else {
+			fetchDirSqlsFromCache(res, sqls);
+		}
+		return sqls;
+	}
+
+	public void fetchDirSqlsFromCache(Resource dir, List<Sql> sqls) throws SVNException {
+		List<Resource> children = svnManager.getChildren(dir, null);
+		if (children == null) {
+			return;
+		}
+		for (Resource r : children) {
+			if (r.isFile()) {
+				fetchFileFromCache(r, sqls);
+			} else {
+				fetchDirSqlsFromCache(r, sqls);
+			}
+		}
+	}
+
+	public void fetchFileFromCache(Resource file, List<Sql> sqls) throws SVNException {
+		List<Sql> list = this.sqlCache.get(file.getPath());
+		if (list != null) {
+			log.info("fetch file:" + file.getPath());
+			sqls.addAll(list);
+		}
+	}
+
+	@Override
+	protected void cacheFiles() throws SVNException {
+		Map<String, List<Sql>> cache = new HashMap<String, List<Sql>>();
+		List<Resource> xmlFiles = this.svnManager.getPatternDescendantFiles(svnRootDir, ".*\\.xml");
+		List<Sql> sqls = new ArrayList<Sql>();
+		for (Resource xml : xmlFiles) {
+			this.fetchFile(xml, sqls);
+		}
+		for (Sql sql : sqls) {
+			String filePath = sql.getPath();
+			List<Sql> fileSqls = cache.get(filePath);
+			if (fileSqls == null) {
+				fileSqls = new ArrayList<Sql>();
+				cache.put(filePath, fileSqls);
+			}
+			fileSqls.add(sql);
+		}
+		this.sqlCache = cache;
 	}
 
 }

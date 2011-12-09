@@ -3,6 +3,8 @@ package com.dianping.codereview.svn;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,7 +34,7 @@ public class SVNManagerTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-	
+
 	@Test
 	public void testIsFile() throws SVNException {
 		Assert.assertTrue(svnManager.isFile("/svn/dianping/platform/middleware/trunk/hawk/pom.xml", -1));
@@ -47,7 +49,7 @@ public class SVNManagerTest {
 		System.out.println(p.nameSet());
 		Assert.assertNotNull(p.getStringValue("svn:executable"));
 	}
-	
+
 	@Test
 	public void testGetFileIfDir() throws Exception {
 		OutputStream outputStream = new ByteArrayOutputStream();
@@ -66,20 +68,27 @@ public class SVNManagerTest {
 			System.out.println((r.isFile() ? "file:" : "directory:") + r.getPath() + ":" + r.getName());
 		}
 	}
-	
+
 	@Test
 	public void testGetChildrenIfFile() throws Exception {
 		Resource res = new Resource();
 		res.setPath("/svn/dianping/platform/middleware/trunk/hawk/pom.xml");
 		svnManager.getChildren(res, null);
 	}
-	
+
 	@Test
 	public void testGetDescendant() throws SVNException {
-		List<Resource> files = svnManager.getDescendantFiles("/svn/dianping/platform/middleware/trunk/", "pom.xml");
+		List<Resource> files = svnManager.getDescendantFiles("/svn/dianping/platform/middleware/trunk/hawk", "pom.xml");
 		for (Resource resource : files) {
 			System.out.println(resource.getPath());
 		}
+	}
+
+	@Test
+	public void testPattern() {
+		Pattern pattern = Pattern.compile(".*\\.xml");
+		Matcher matcher = pattern.matcher("x.xml");
+		Assert.assertEquals(true, matcher.matches());
 	}
 
 }

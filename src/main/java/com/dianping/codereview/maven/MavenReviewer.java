@@ -13,86 +13,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tmatesoft.svn.core.SVNException;
 
+import com.dianping.codereview.CachedSvnReviewer;
 import com.dianping.codereview.maven.domain.Dependency;
 import com.dianping.codereview.maven.domain.Pom;
 import com.dianping.codereview.svn.Resource;
-import com.dianping.codereview.svn.SVNManager;
 
-public class MavenReviewer {
+public class MavenReviewer extends CachedSvnReviewer{
 	private final static Log log = LogFactory.getLog(MavenReviewer.class);
 
-	private Map<String, List<Pom>> beDependencies;
-
-	private String svnUrl;
-
-	private String username;
-
-	private String password;
-
-	private String svnRootDir;
-
-	private SVNManager svnManager;
-
-	public void setBeDependencies(Map<String, List<Pom>> antiDependencies) {
-		this.beDependencies = antiDependencies;
-	}
-
-	public void setSvnRootDir(String svnRootDir) {
-		this.svnRootDir = svnRootDir;
-	}
-
-	public void setSvnUrl(String host) {
-		this.svnUrl = host;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	private volatile boolean firstInit = false;
+	private Map<String, List<Pom>> antiCache;
 
 	private Map<String, List<Pom>> cache;
-
-	public void init() throws SVNException, MavenPomFormatInvalidException {
-		this.svnManager = new SVNManager(svnUrl, username, password);
-		this.svnManager.setOnlyTrunk(true);
-		Runnable r = new Runnable() {
-
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						cacheFiles();
-						firstInit = true;
-						Thread.sleep(60 * 1000);
-					} catch (Exception e) {
-						log.error("", e);
-					}
-				}
-			}
-		};
-		Thread t = new Thread(r);
-		t.start();
-	}
-
-	public boolean isFirstInit() {
-		return firstInit;
-	}
 
 	public List<Dependency> searchBeDepended(String artifactId, String version) {
 		return this.searchBeDepended(artifactId, null, version);
 	}
 
 	public List<Dependency> searchBeDepended(String artifactId, String groupId, String version) {
-		if (this.beDependencies == null || this.beDependencies.size() == 0) {
+		if (this.antiCache == null || this.antiCache.size() == 0) {
 			return null;
 		}
 		List<Dependency> list = new ArrayList<Dependency>();
-		Set<Entry<String, List<Pom>>> entrySet = this.beDependencies.entrySet();
+		Set<Entry<String, List<Pom>>> entrySet = this.antiCache.entrySet();
 		for (Entry<String, List<Pom>> entry : entrySet) {
 			String dependArtifactId = entry.getKey();
 			if (artifactId == null || dependArtifactId.contains(artifactId)) {
@@ -123,10 +65,10 @@ public class MavenReviewer {
 	}
 
 	public void dumpBeDepended() {
-		if (this.beDependencies == null || this.beDependencies.size() == 0) {
+		if (this.antiCache == null || this.antiCache.size() == 0) {
 			return;
 		}
-		Set<Entry<String, List<Pom>>> entrySet = this.beDependencies.entrySet();
+		Set<Entry<String, List<Pom>>> entrySet = this.antiCache.entrySet();
 		for (Entry<String, List<Pom>> entry : entrySet) {
 			String dependArtifactId = entry.getKey();
 			System.out.println(dependArtifactId);
@@ -166,9 +108,9 @@ public class MavenReviewer {
 		return list;
 	}
 
-	private void cacheFiles() throws SVNException, MavenPomFormatInvalidException {
-		Map<String, List<Pom>> antiCache = new HashMap<String, List<Pom>>();
-		Map<String, List<Pom>> cache = new HashMap<String, List<Pom>>();
+	protected void cacheFiles() throws SVNException, MavenPomFormatInvalidException {
+		Map<String, List<Pom>> beDependencyCache = new HashMap<String, List<Pom>>();
+		Map<String, List<Pom>> dependencyCache = new HashMap<String, List<Pom>>();
 		List<Resource> ress = this.svnManager.getDescendantFiles(this.svnRootDir, "pom.xml");
 		for (Resource res : ress) {
 			log.debug("start cache file:" + res.getPath());
@@ -177,26 +119,26 @@ public class MavenReviewer {
 			this.svnManager.getFile(path, out, -1, null);
 			Pom pom = MavenFileAnalyzer.analyze(new ByteArrayInputStream(out.toByteArray()));
 			pom.setSvnPath(path);
-			List<Pom> depends = cache.get(pom.getArtifactId());
+			List<Pom> depends = dependencyCache.get(pom.getArtifactId());
 			if (depends == null) {
 				depends = new ArrayList<Pom>();
-				cache.put(pom.getArtifactId(), depends);
+				dependencyCache.put(pom.getArtifactId(), depends);
 			}
 			depends.add(pom);
-			this.cache = cache;
+			this.cache = dependencyCache;
 			List<Dependency> dependencies = pom.getDependencies();
 			if (dependencies != null) {
 				for (Dependency dependency : dependencies) {
 					String artifactId = dependency.getArtifactId();
-					List<Pom> antiDepends = antiCache.get(artifactId);
+					List<Pom> antiDepends = beDependencyCache.get(artifactId);
 					if (antiDepends == null) {
 						antiDepends = new ArrayList<Pom>();
-						antiCache.put(artifactId, antiDepends);
+						beDependencyCache.put(artifactId, antiDepends);
 					}
 					antiDepends.add(pom);
 				}
 			}
-			this.beDependencies = antiCache;
+			this.antiCache = beDependencyCache;
 		}
 	}
 

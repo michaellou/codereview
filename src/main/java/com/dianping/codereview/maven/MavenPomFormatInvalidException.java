@@ -3,11 +3,13 @@
  */
 package com.dianping.codereview.maven;
 
+import com.dianping.codereview.FormatInvalidException;
+
 /**
  * @author sean.wang
  * @since Nov 3, 2011
  */
-public class MavenPomFormatInvalidException extends Exception {
+public class MavenPomFormatInvalidException extends FormatInvalidException {
 
 	/**
 	 * 

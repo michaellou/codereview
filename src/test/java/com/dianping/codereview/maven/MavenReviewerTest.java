@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.tmatesoft.svn.core.SVNException;
 
+import com.dianping.codereview.FormatInvalidException;
 import com.dianping.codereview.maven.domain.Dependency;
 import com.dianping.codereview.maven.domain.Pom;
 
@@ -50,7 +51,7 @@ public class MavenReviewerTest {
 	}
 
 	@Test
-	public void testSearchBeDepend() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+	public void testSearchBeDepend() throws SVNException, InterruptedException, FormatInvalidException {
 		MavenReviewer maven = new MavenReviewer();
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
@@ -83,7 +84,7 @@ public class MavenReviewerTest {
 	}
 
 	@Test
-	public void testSearchDepend() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+	public void testSearchDepend() throws SVNException, InterruptedException, FormatInvalidException {
 		MavenReviewer maven = new MavenReviewer();
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
@@ -116,7 +117,7 @@ public class MavenReviewerTest {
 	}
 
 	@Test
-	public void testSearchUseGroupId() throws SVNException, MavenPomFormatInvalidException, InterruptedException {
+	public void testSearchUseGroupId() throws SVNException, InterruptedException, FormatInvalidException {
 		MavenReviewer maven = new MavenReviewer();
 		maven.setSvnUrl("http://192.168.8.45:81");
 		maven.setUsername("hawk");
