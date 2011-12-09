@@ -1,4 +1,4 @@
-使用场景：	
+搜索svn上ibatis文件内的sql语句：	
 	
 	/**
 	 * 列出svn地址上ibatis配置文件内的所有sql语句
@@ -15,3 +15,115 @@
 			System.out.println(sql.getStatement());
 		}
 	}
+	
+	
+	/**
+	 * 先cache并查询svn地址上ibatis配置文件内的所有sql语句
+	 * 
+	 * @throws SVNException
+	 * @throws FormatInvalidException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testFetchSqlsFromSvnDirAfterCache() throws SVNException, FormatInvalidException, InterruptedException {
+		IbatisReviewer ir = new IbatisReviewer();
+		ir.setSvnUrl("http://192.168.8.45:81");
+		ir.setUsername("hawk");
+		ir.setPassword("123456");
+		ir.setSvnRootDir("/svn/dianping/platform/middleware/trunk/hawk/hawk-server/src/main/resources/config/sqlmap/public/");
+		ir.init();// cache
+		while (true) {
+			if (ir.isFirstInit()) {
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		System.out.println("---- finish cache -----");
+		List<Sql> sqls = ir.fetchSqlsFromCache();
+		for (Sql sql : sqls) {
+			System.out.println("from: " + sql.getPath());
+			System.out.println(sql.getStatement());
+		}
+	}
+	
+	
+根据pom分析svn上项目的依赖关系：		
+	/**
+	 * 搜索被依赖关系 
+	 * 
+	 * @throws SVNException
+	 * @throws InterruptedException
+	 * @throws FormatInvalidException
+	 */
+	@Test
+	public void testSearchBeDepend() throws SVNException, InterruptedException, FormatInvalidException {
+		MavenReviewer maven = new MavenReviewer();
+		maven.setSvnUrl("http://192.168.8.45:81");
+		maven.setUsername("hawk");
+		maven.setPassword("123456");
+		maven.setSvnRootDir("/svn/dianping/dianping/group");
+		maven.init();
+		while (true) {
+			if (maven.isFirstInit()) {
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		List<Dependency> bedeps = maven.searchBeDepended("h", null);
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
+		}
+		System.out.println();
+		bedeps = maven.searchBeDepended("h", "0.2.2");
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
+		}
+		System.out.println();
+		bedeps = maven.searchBeDepended("hawk-client", "0.2.2");
+		for (Dependency bedep : bedeps) {
+			Pom pom = bedep.getSearchedPom();
+			System.out.println(bedep.getArtifactId() + ":" + bedep.getVersion() + ":" + pom.getArtifactId() + ":" + pom.getVersion());
+		}
+	}
+
+	/**
+	 * 搜索依赖关系
+	 * 
+	 * @throws SVNException
+	 * @throws InterruptedException
+	 * @throws FormatInvalidException
+	 */
+	@Test
+	public void testSearchDepend() throws SVNException, InterruptedException, FormatInvalidException {
+		MavenReviewer maven = new MavenReviewer();
+		maven.setSvnUrl("http://192.168.8.45:81");
+		maven.setUsername("hawk");
+		maven.setPassword("123456");
+		maven.setSvnRootDir("/svn/dianping/dianping/group");
+		maven.init();
+		while (true) {
+			if (maven.isFirstInit()) {
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		List<Dependency> searchDepended = maven.searchDepended("group", null);
+		for (Dependency dependency : searchDepended) {
+			Pom beDependency = dependency.getSearchedPom();
+			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + beDependency.getArtifactId() + ":" + beDependency.getVersion());
+		}
+		System.out.println();
+		searchDepended = maven.searchDepended("group", "1.0.1");
+		for (Dependency dependency : searchDepended) {
+			Pom beDependency = dependency.getSearchedPom();
+			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + beDependency.getArtifactId() + ":" + beDependency.getVersion());
+		}
+		System.out.println();
+		searchDepended = maven.searchDepended("group-service", "1.0.1");
+		for (Dependency dependency : searchDepended) {
+			Pom searchedPom = dependency.getSearchedPom();
+			System.out.println(dependency.getArtifactId() + ":" + dependency.getVersion() + ":" + searchedPom.getArtifactId() + ":" + searchedPom.getVersion());
+		}
+	}	

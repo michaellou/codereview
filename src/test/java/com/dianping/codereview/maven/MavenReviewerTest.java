@@ -50,6 +50,13 @@ public class MavenReviewerTest {
 	public void tearDown() throws Exception {
 	}
 
+	/**
+	 * 搜索被依赖关系 
+	 * 
+	 * @throws SVNException
+	 * @throws InterruptedException
+	 * @throws FormatInvalidException
+	 */
 	@Test
 	public void testSearchBeDepend() throws SVNException, InterruptedException, FormatInvalidException {
 		MavenReviewer maven = new MavenReviewer();
@@ -83,6 +90,13 @@ public class MavenReviewerTest {
 		}
 	}
 
+	/**
+	 * 搜索依赖关系
+	 * 
+	 * @throws SVNException
+	 * @throws InterruptedException
+	 * @throws FormatInvalidException
+	 */
 	@Test
 	public void testSearchDepend() throws SVNException, InterruptedException, FormatInvalidException {
 		MavenReviewer maven = new MavenReviewer();
